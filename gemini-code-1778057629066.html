@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>창의적 사고 TEST</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 400px; background: var(--card); border-radius: 30px; padding: 40px 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; }
+        .progress-container { margin-bottom: 30px; }
+        .progress-text { font-size: 14px; color: var(--primary); font-weight: 800; margin-bottom: 8px; display: block; }
+        .progress-bar { height: 6px; background: #e5e7eb; border-radius: 10px; overflow: hidden; }
+        #bar-fill { height: 100%; background: var(--primary); width: 10%; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        h1 { font-size: 22px; color: #111827; margin-bottom: 40px; line-height: 1.4; word-break: keep-all; }
+        .question-text { font-size: 19px; font-weight: 600; color: #374151; margin-bottom: 50px; line-height: 1.6; min-height: 120px; display: flex; align-items: center; justify-content: center; }
+        
+        .choice-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .choice-btn { aspect-ratio: 1; border: 2px solid #f3f4f6; border-radius: 20px; background: #f9fafb; font-size: 24px; font-weight: 800; color: #4b5563; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .choice-btn:active { transform: scale(0.95); background: var(--primary); color: white; border-color: var(--primary); }
+        
+        #result-screen { display: none; }
+        .summary-list { text-align: left; margin-top: 20px; max-height: 400px; overflow-y: auto; padding-right: 10px; }
+        .summary-item { padding: 12px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .summary-q { color: #6b7280; flex: 1; padding-right: 15px; }
+        .summary-a { font-weight: 800; color: var(--primary); width: 30px; text-align: right; }
+        .restart-btn { width: 100%; padding: 18px; background: #111827; color: white; border: none; border-radius: 15px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="test-screen">
+        <div class="progress-container">
+            <span class="progress-text" id="progress-text">1 / 10</span>
+            <div class="progress-bar"><div id="bar-fill"></div></div>
+        </div>
+        
+        <div id="q-text" class="question-text"></div>
+        
+        <div class="choice-group">
+            <button class="choice-btn" onclick="next('O')">O</button>
+            <button class="choice-btn" onclick="next('X')">X</button>
+            <button class="choice-btn" onclick="next('△')">△</button>
+        </div>
+        <p style="margin-top: 25px; font-size: 13px; color: #9ca3af;">버튼을 누르면 다음으로 넘어갑니다.</p>
+    </div>
+
+    <div id="result-screen">
+        <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
+        <h1 style="margin-bottom: 20px;">테스트 완료!</h1>
+        <div class="summary-list" id="summary-list"></div>
+        <button class="restart-btn" onclick="location.reload()">다시 시작하기</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        "창의적 사고는 선천적으로 타고난 사람들에게만 있다.",
+        "지능이 뛰어나거나 현실에 적응을 잘 하지 못하는 사람들이 일반인보다 창의적이다.",
+        "창의적 사고는 후천적 노력에 의해 개발 가능하다.",
+        "어느 정도의 전문 지식은 필요하지만 너무 많은 지식은 오히려 창의성을 저해할 수 있다.",
+        "창의적 문제 해결을 위해서는 문제 원인 분석 능력이 매우 뛰어나야 한다.",
+        "나이가 어릴수록 창의적 사고가 부족한 경향이 있다.",
+        "본인의 역할을 다 하는 사람은 어느 분야에서든 창의적일 수 있다.",
+        "사람이 상대로부터 신뢰를 받게 된다면 더욱 더 창의적이 된다.",
+        "아이디어를 내는 것과 그 아이디어의 쓰임을 따지는 것은 별개의 문제이다.",
+        "창의적 사고를 위해선 고정관념을 버리고 문제의식을 가져야 한다."
+    ];
+
+    let currentIdx = 0;
+    const answers = [];
+
+    function updateUI() {
+        if (currentIdx < questions.length) {
+            document.getElementById('q-text').innerText = questions[currentIdx];
+            document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${questions.length}`;
+            document.getElementById('bar-fill').style.width = `${((currentIdx + 1) / questions.length) * 100}%`;
+        } else {
+            showResult();
+        }
+    }
+
+    function next(choice) {
+        answers.push({ q: questions[currentIdx], a: choice });
+        currentIdx++;
+        // 약간의 딜레이를 주어 클릭 피드백을 느낌
+        setTimeout(updateUI, 150);
+    }
+
+    function showResult() {
+        document.getElementById('test-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const list = document.getElementById('summary-list');
+        list.innerHTML = answers.map((item, i) => `
+            <div class="summary-item">
+                <span class="summary-q">${i + 1}. ${item.q}</span>
+                <span class="summary-a">${item.a}</span>
+            </div>
+        `).join('');
+    }
+
+    updateUI();
+</script>
+
+</body>
+</html>
